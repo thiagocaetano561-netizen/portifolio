@@ -39,6 +39,9 @@ export function getEnv(): Env {
   }
   const env = parsed.data;
   const problems: string[] = [];
+  if (env.DATABASE_DRIVER === "pg" && !env.DATABASE_URL) {
+    problems.push("DATABASE_URL está vazia — cole a connection string do Neon (DATABASE_URL_UNPOOLED) no arquivo de ambiente");
+  }
   if (!env.PUZZLE_HMAC_KEY || Buffer.from(env.PUZZLE_HMAC_KEY, "base64").length < 32) {
     problems.push("PUZZLE_HMAC_KEY ausente ou com menos de 32 bytes (base64)");
   }
