@@ -1,0 +1,583 @@
+@import "tailwindcss";
+
+/* ------------------------------------------------------------------------ */
+/* Design tokens — TRYGGPORT DEV                                             */
+/* ------------------------------------------------------------------------ */
+@theme {
+  --color-ink: #070b0b;
+  --color-ink-2: #101817;
+  --color-ink-3: #152120;
+  --color-signal: #70e0b1;
+  --color-signal-bright: #36d99a;
+  --color-signal-deep: #173e30;
+  --color-paper: #edf5f0;
+  --color-steel: #8d9e96;
+  --color-alert: #da7373;
+  --color-line: rgb(112 224 177 / 0.14);
+  --color-line-strong: rgb(112 224 177 / 0.28);
+
+  --font-display: var(--font-display-face), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-body-face), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-mono-face), ui-monospace, "Cascadia Code", Menlo, monospace;
+
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-cine: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+:root {
+  color-scheme: dark;
+  --term-fg: #70e0b1;
+  --term-dim: #5c9a80;
+  --term-glow: rgb(112 224 177 / 0.28);
+  --term-accent: #c4f7df;
+  --term-bg: #060a0a;
+}
+
+[data-term-theme="amber"] {
+  --term-fg: #ffb547;
+  --term-dim: #b07d33;
+  --term-glow: rgb(255 181 71 / 0.3);
+  --term-accent: #ffe1a8;
+}
+[data-term-theme="ice"] {
+  --term-fg: #9fd8ff;
+  --term-dim: #6390ad;
+  --term-glow: rgb(159 216 255 / 0.3);
+  --term-accent: #e1f3ff;
+}
+
+html {
+  background: var(--color-ink);
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+body {
+  background: var(--color-ink);
+  color: var(--color-paper);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: rgb(112 224 177 / 0.3);
+  color: var(--color-paper);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-signal);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -4rem;
+  z-index: 100;
+  padding: 0.6rem 1rem;
+  background: var(--color-signal);
+  color: var(--color-ink);
+  font-weight: 600;
+  border-radius: 6px;
+}
+.skip-link:focus {
+  top: 1rem;
+}
+
+/* ------------------------------------------------------------------------ */
+/* Atmosfera                                                                  */
+/* ------------------------------------------------------------------------ */
+.grid-bg {
+  background-image:
+    linear-gradient(to right, rgb(112 224 177 / 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(112 224 177 / 0.04) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(ellipse 80% 70% at 60% 30%, black 30%, transparent 85%);
+}
+
+.noise::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.045;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.vignette {
+  background: radial-gradient(ellipse 120% 90% at 50% 40%, transparent 40%, rgb(7 11 11 / 0.85) 100%);
+}
+
+.beam {
+  position: absolute;
+  width: 140vmax;
+  height: 140vmax;
+  left: 62%;
+  top: 30%;
+  translate: -50% -50%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    rgb(112 224 177 / 0.07) 14deg,
+    transparent 30deg,
+    transparent 180deg,
+    rgb(112 224 177 / 0.04) 194deg,
+    transparent 210deg
+  );
+  mask-image: radial-gradient(circle, black 0%, transparent 60%);
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .beam {
+    animation: beam-spin 15s linear infinite;
+  }
+}
+@keyframes beam-spin {
+  to {
+    rotate: 360deg;
+  }
+}
+
+.hairline {
+  background: linear-gradient(to right, transparent, var(--color-line) 15%, var(--color-line) 85%, transparent);
+  height: 1px;
+}
+
+.text-outline {
+  color: transparent;
+  -webkit-text-stroke: 1.2px rgb(237 245 240 / 0.85);
+}
+
+.text-gradient {
+  background: linear-gradient(180deg, #edf5f0 30%, rgb(237 245 240 / 0.55));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* superfície de vidro escuro com contorno sutil */
+.glass {
+  background: linear-gradient(180deg, rgb(21 33 32 / 0.72), rgb(10 16 16 / 0.72));
+  border: 1px solid var(--color-line);
+  box-shadow:
+    inset 0 1px 0 rgb(237 245 240 / 0.04),
+    0 30px 80px -40px rgb(0 0 0 / 0.9);
+  backdrop-filter: blur(14px) saturate(120%);
+}
+
+/* luz que segue o ponteiro (variáveis --mx/--my definidas via JS) */
+.light-follow {
+  position: relative;
+  isolation: isolate;
+}
+.light-follow::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0;
+  border-radius: inherit;
+  background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), rgb(112 224 177 / 0.16), transparent 60%);
+  transition: opacity 0.4s var(--ease-out-quint);
+}
+.light-follow:hover::before {
+  opacity: 1;
+}
+
+.corner-ticks {
+  position: relative;
+}
+.corner-ticks::before,
+.corner-ticks::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-color: var(--color-signal);
+  opacity: 0.7;
+  pointer-events: none;
+  z-index: 2;
+  transition: all 0.5s var(--ease-out-quint);
+}
+.corner-ticks::before {
+  top: -6px;
+  left: -6px;
+  border-top: 1.5px solid;
+  border-left: 1.5px solid;
+}
+.corner-ticks::after {
+  bottom: -6px;
+  right: -6px;
+  border-bottom: 1.5px solid;
+  border-right: 1.5px solid;
+}
+.group:hover .corner-ticks::before,
+.group:focus-within .corner-ticks::before {
+  top: -10px;
+  left: -10px;
+}
+.group:hover .corner-ticks::after,
+.group:focus-within .corner-ticks::after {
+  bottom: -10px;
+  right: -10px;
+}
+
+/* ------------------------------------------------------------------------ */
+/* Marca — revelação por traço (SVG gerado do logotipo original)             */
+/* ------------------------------------------------------------------------ */
+.mark-reveal path {
+  fill: var(--color-signal);
+  stroke: var(--color-signal-bright);
+  stroke-width: 1.2;
+}
+@media (scripting: enabled) and (prefers-reduced-motion: no-preference) {
+  .js-ready .mark-reveal path {
+    fill-opacity: 0;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation:
+      mark-draw 2.2s var(--ease-cine) 0.3s forwards,
+      mark-fill 1.2s var(--ease-out-quint) 2.1s forwards;
+  }
+  .js-ready .mark-reveal .mark-halo {
+    opacity: 0;
+    animation: mark-halo 2.6s var(--ease-out-quint) 1.9s forwards;
+  }
+}
+@keyframes mark-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes mark-fill {
+  to {
+    fill-opacity: 1;
+    stroke-opacity: 0.35;
+  }
+}
+@keyframes mark-halo {
+  40% {
+    opacity: 0.9;
+  }
+  to {
+    opacity: 0.35;
+  }
+}
+
+/* ------------------------------------------------------------------------ */
+/* Sinais luminosos das seções (pistas públicas, inertes sem o servidor)      */
+/* ------------------------------------------------------------------------ */
+.beacon-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--color-signal);
+  opacity: 0.28;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .beacon:not([data-aligned]) .beacon-dot {
+    animation: beacon-flash 7s var(--ease-out-quint) infinite;
+    animation-delay: calc(var(--i) * 0.42s + var(--offset, 0s));
+  }
+}
+@keyframes beacon-flash {
+  0%,
+  100% {
+    opacity: 0.28;
+    box-shadow: none;
+  }
+  2% {
+    opacity: 1;
+    box-shadow: 0 0 10px rgb(112 224 177 / 0.9);
+  }
+  6% {
+    opacity: 0.28;
+    box-shadow: none;
+  }
+}
+.beacon[data-aligned] .beacon-dot {
+  opacity: 1;
+  box-shadow: 0 0 8px rgb(54 217 154 / 0.85);
+  background: var(--color-signal-bright);
+}
+.beacon[data-aligned] .beacon-shape {
+  color: var(--color-signal-bright);
+  filter: drop-shadow(0 0 6px rgb(54 217 154 / 0.7));
+}
+
+/* indicador discreto do hero */
+.file-indicator-dot {
+  background: var(--color-alert);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .file-indicator-dot {
+    animation: indicator 3.4s steps(1) infinite;
+  }
+}
+@keyframes indicator {
+  0%,
+  86% {
+    opacity: 1;
+  }
+  88%,
+  92% {
+    opacity: 0.2;
+  }
+  94% {
+    opacity: 1;
+  }
+}
+
+/* ------------------------------------------------------------------------ */
+/* Revelação no scroll — só com JavaScript ativo e movimento permitido.       */
+/* ------------------------------------------------------------------------ */
+@media (scripting: enabled) and (prefers-reduced-motion: no-preference) {
+  .js-ready [data-reveal] {
+    opacity: 0;
+    transform: translateY(22px);
+    filter: blur(6px);
+    transition:
+      opacity 1s var(--ease-out-quint),
+      transform 1s var(--ease-out-quint),
+      filter 1s var(--ease-out-quint);
+    transition-delay: calc(var(--reveal-delay, 0) * 1ms);
+  }
+  .js-ready [data-reveal].is-visible {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+/* Entrada do conteúdo principal do hero: só movimento, nunca opacidade 0
+   (o título é o maior elemento da página e não pode atrasar o LCP). */
+@media (prefers-reduced-motion: no-preference) {
+  .hero-rise {
+    animation: hero-rise 1.2s var(--ease-out-quint) both;
+  }
+}
+@keyframes hero-rise {
+  from {
+    transform: translateY(18px);
+    letter-spacing: 0.01em;
+  }
+}
+
+/* ------------------------------------------------------------------------ */
+/* Terminal                                                                   */
+/* ------------------------------------------------------------------------ */
+.terminal {
+  background:
+    radial-gradient(ellipse 120% 70% at 50% -10%, rgb(112 224 177 / 0.08), transparent 60%),
+    var(--term-bg);
+  color: var(--term-fg);
+  font-family: var(--font-mono);
+}
+.terminal-screen {
+  position: relative;
+  scroll-behavior: smooth;
+}
+.terminal-crt::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(to bottom, rgb(0 0 0 / 0) 0px, rgb(0 0 0 / 0) 2px, rgb(0 0 0 / 0.16) 3px),
+    radial-gradient(ellipse 130% 100% at 50% 50%, transparent 60%, rgb(0 0 0 / 0.45) 100%);
+  mix-blend-mode: multiply;
+  border-radius: inherit;
+}
+.term-line {
+  white-space: pre-wrap;
+  word-break: break-word;
+  text-shadow: 0 0 6px var(--term-glow);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .term-enter {
+    animation: term-enter 0.32s var(--ease-out-quint) both;
+    animation-delay: calc(var(--d, 0) * 14ms);
+  }
+}
+@keyframes term-enter {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+}
+.term-k-dim {
+  color: var(--term-dim);
+  text-shadow: none;
+}
+.term-k-err {
+  color: var(--color-alert);
+  text-shadow: 0 0 6px rgb(218 115 115 / 0.3);
+}
+.term-k-warn {
+  color: #e8c46d;
+  text-shadow: 0 0 6px rgb(232 196 109 / 0.25);
+}
+.term-k-ok {
+  color: var(--term-accent);
+}
+.term-k-sys {
+  color: var(--term-dim);
+  font-style: italic;
+}
+.term-k-accent {
+  color: var(--term-accent);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.term-k-lys {
+  color: #cbbcff;
+  text-shadow: 0 0 8px rgb(203 188 255 / 0.4);
+}
+.term-k-cmd {
+  color: var(--color-paper);
+  text-shadow: none;
+}
+
+.term-banner {
+  position: relative;
+  margin: 0.75rem 0;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--term-glow);
+  border-radius: 10px;
+  background: linear-gradient(90deg, rgb(112 224 177 / 0.1), transparent 70%);
+  overflow: hidden;
+}
+.term-banner[data-tone="memory"] {
+  border-color: rgb(203 188 255 / 0.4);
+  background: linear-gradient(90deg, rgb(203 188 255 / 0.12), transparent 70%);
+}
+.term-banner[data-tone="ending"] {
+  border-color: rgb(232 196 109 / 0.45);
+  background: linear-gradient(90deg, rgb(232 196 109 / 0.12), transparent 70%);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .term-banner::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(100deg, transparent 30%, rgb(237 245 240 / 0.12) 50%, transparent 70%);
+    transform: translateX(-100%);
+    animation: banner-sweep 1.6s var(--ease-out-quint) 0.1s 1 forwards;
+  }
+}
+@keyframes banner-sweep {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+.term-caret {
+  display: inline-block;
+  width: 0.6em;
+  height: 1.15em;
+  translate: 0 0.2em;
+  background: var(--term-fg);
+  box-shadow: 0 0 8px var(--term-glow);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .term-caret {
+    animation: caret 1.05s steps(2, start) infinite;
+  }
+}
+@keyframes caret {
+  to {
+    visibility: hidden;
+  }
+}
+
+.term-input {
+  caret-color: var(--term-fg);
+  caret-shape: block;
+  background: transparent;
+  outline: none;
+  border: 0;
+  color: var(--color-paper);
+  font: inherit;
+  width: 100%;
+}
+/* evita zoom automático do iOS ao focar o campo */
+@media (max-width: 640px) {
+  .term-input {
+    font-size: 16px;
+  }
+}
+
+/* Interferência visual narrativa */
+@media (prefers-reduced-motion: no-preference) {
+  .glitch-low {
+    animation: glitch 0.45s steps(2) 1;
+  }
+  .glitch-high {
+    animation: glitch 0.9s steps(3) 2;
+  }
+}
+@keyframes glitch {
+  0% {
+    filter: none;
+    transform: none;
+  }
+  20% {
+    filter: hue-rotate(40deg) saturate(1.6);
+    transform: translateX(-2px) skewX(-1deg);
+  }
+  40% {
+    filter: contrast(1.6) brightness(1.2);
+    transform: translateX(3px);
+    clip-path: inset(12% 0 40% 0);
+  }
+  60% {
+    filter: invert(0.08);
+    transform: translateX(-1px);
+    clip-path: inset(50% 0 10% 0);
+  }
+  100% {
+    filter: none;
+    transform: none;
+    clip-path: none;
+  }
+}
+
+/* Cortina da primeira visita: cobre a página até o boot assumir (evita flash). */
+.boot-curtain {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+  background: var(--term-bg);
+}
+.js-ready:not(.boot-seen):not(.boot-ready) .boot-curtain {
+  display: block;
+}
+
+/* Sem JavaScript o terminal não funciona: ele nunca cobre o portfólio. */
+html:not(.js-ready) .terminal-fullscreen {
+  position: relative !important;
+  inset: auto !important;
+  height: 24rem;
+  border-radius: 1rem;
+  z-index: auto;
+}
+
+.thin-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(112 224 177 / 0.25) transparent;
+}
+
+.dvh-screen {
+  height: 100vh;
+  height: 100dvh;
+}
