@@ -1,0 +1,12 @@
+# Nunca enviar para a Vercel (vale para Vercel Drop e `vercel` CLI).
+/narrative
+.env*
+!.env.example
+.data
+.vercel
+assets/media/source
+assets/media/keyframes
+test-results
+playwright-report
+node_modules
+.next
