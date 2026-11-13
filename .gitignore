@@ -20,7 +20,7 @@ next-env.d.ts
 # Ela é lida apenas pelo script `npm run db:seed` e NUNCA deve ser
 # publicada em um repositório público. Mantenha um backup privado.
 # ---------------------------------------------------------------
-narrative/
+/narrative/
 
 # originais pesados dos vídeos (Higgsfield). As versões otimizadas ficam em public/media.
 # Os originais também continuam na sua conta Higgsfield.
