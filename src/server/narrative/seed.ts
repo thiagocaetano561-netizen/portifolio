@@ -60,27 +60,28 @@ export function lintStory(story: Story): string[] {
   return problems;
 }
 
+/** Linhas prontas para o banco. Não contêm respostas em texto puro — só verificadores HMAC. */
+export interface SeedRows {
+  version: string;
+  chapters: (typeof chapters.$inferInsert)[];
+  challenges: (typeof challenges.$inferInsert)[];
+  rules: (typeof commandRules.$inferInsert)[];
+  files: (typeof virtualFiles.$inferInsert)[];
+  unlocks: (typeof unlockRules.$inferInsert)[];
+  eggs: (typeof easterEggs.$inferInsert)[];
+}
+
 /**
- * Substitui todo o conteúdo protegido em uma transação. O progresso dos
- * visitantes não é tocado. As respostas viram verificadores HMAC aqui e o
- * texto puro nunca é gravado no banco.
+ * Converte a narrativa em linhas do banco. As respostas viram verificadores
+ * HMAC aqui; o resultado nunca contém o texto das respostas.
  */
-export async function seedStory(db: Db, story: Story, hmacKey: string) {
+export function compileStory(story: Story, hmacKey: string): SeedRows {
   const problems = lintStory(story);
   if (problems.length) throw new Error(`Narrativa inválida:\n- ${problems.join("\n- ")}`);
-
-  await db.transaction(async (tx) => {
-    await tx.execute(sql`DELETE FROM challenges`);
-    await tx.execute(sql`DELETE FROM command_rules`);
-    await tx.execute(sql`DELETE FROM virtual_files`);
-    await tx.execute(sql`DELETE FROM unlock_rules`);
-    await tx.execute(sql`DELETE FROM easter_eggs`);
-    await tx.execute(sql`DELETE FROM chapters`);
-
-    await tx.insert(chapters).values(story.chapters.map((c, i) => ({ ...c, sort: i })));
-
-    await tx.insert(challenges).values(
-      story.challenges.map((c, i) => ({
+  return {
+    version: story.version,
+    chapters: story.chapters.map((c, i) => ({ ...c, sort: i })),
+    challenges: story.challenges.map((c, i) => ({
         id: c.id,
         chapterId: c.chapter,
         command: c.command,
@@ -102,10 +103,7 @@ export async function seedStory(db: Db, story: Story, hmacKey: string) {
         hintTitle: c.hintTitle ?? null,
         hints: c.hints ?? [],
       })),
-    );
-
-    await tx.insert(commandRules).values(
-      story.rules.map((r) => ({
+    rules: story.rules.map((r) => ({
         command: r.command,
         argsMatch: r.args ? [...new Set(r.args.map((a) => normalizeArgs(a.split(/\s+/))))] : null,
         mode: r.mode ?? "replace",
@@ -117,10 +115,7 @@ export async function seedStory(db: Db, story: Story, hmacKey: string) {
         events: r.events ?? [],
         eggId: r.egg ?? null,
       })),
-    );
-
-    await tx.insert(virtualFiles).values(
-      story.files.map((f) => ({
+    files: story.files.map((f) => ({
         path: f.path,
         kind: f.kind ?? "file",
         content: f.content ?? "",
@@ -132,18 +127,37 @@ export async function seedStory(db: Db, story: Story, hmacKey: string) {
         setsFlags: f.sets ?? [],
         eggId: f.egg ?? null,
       })),
-    );
+    unlocks: story.unlocks.map((u) => ({ whenAll: u.when, sets: u.sets, output: lines(u.output), events: u.events ?? [] })),
+    eggs: story.eggs.map((e) => ({ ...e })),
+  };
+}
 
-    await tx.insert(unlockRules).values(
-      story.unlocks.map((u) => ({ whenAll: u.when, sets: u.sets, output: lines(u.output), events: u.events ?? [] })),
-    );
-
-    await tx.insert(easterEggs).values(story.eggs.map((e) => ({ ...e })));
-
+/**
+ * Substitui todo o conteúdo protegido em uma transação. O progresso dos
+ * visitantes não é tocado.
+ */
+export async function writeSeedRows(db: Db, rows: SeedRows) {
+  await db.transaction(async (tx) => {
+    await tx.execute(sql`DELETE FROM challenges`);
+    await tx.execute(sql`DELETE FROM command_rules`);
+    await tx.execute(sql`DELETE FROM virtual_files`);
+    await tx.execute(sql`DELETE FROM unlock_rules`);
+    await tx.execute(sql`DELETE FROM easter_eggs`);
+    await tx.execute(sql`DELETE FROM chapters`);
+    await tx.insert(chapters).values(rows.chapters);
+    await tx.insert(challenges).values(rows.challenges);
+    await tx.insert(commandRules).values(rows.rules);
+    await tx.insert(virtualFiles).values(rows.files);
+    await tx.insert(unlockRules).values(rows.unlocks);
+    await tx.insert(easterEggs).values(rows.eggs);
     await tx
       .insert(contentMeta)
-      .values({ key: "story_version", value: story.version })
-      .onConflictDoUpdate({ target: contentMeta.key, set: { value: story.version } });
+      .values({ key: "story_version", value: rows.version })
+      .onConflictDoUpdate({ target: contentMeta.key, set: { value: rows.version } });
   });
   invalidateContent();
+}
+
+export async function seedStory(db: Db, story: Story, hmacKey: string) {
+  await writeSeedRows(db, compileStory(story, hmacKey));
 }

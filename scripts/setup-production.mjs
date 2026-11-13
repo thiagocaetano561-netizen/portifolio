@@ -44,6 +44,34 @@ function parseEnv(text) {
   return out;
 }
 
+/** Lê uma linha do teclado sem mostrar o que é digitado/colado. */
+function askHidden(question) {
+  return new Promise((resolve) => {
+    process.stdout.write(question);
+    const stdin = process.stdin;
+    stdin.setRawMode?.(true);
+    stdin.resume();
+    stdin.setEncoding("utf8");
+    let value = "";
+    const onData = (chunk) => {
+      for (const ch of chunk) {
+        if (ch === "\r" || ch === "\n") {
+          stdin.setRawMode?.(false);
+          stdin.pause();
+          stdin.off("data", onData);
+          process.stdout.write("\n");
+          resolve(value);
+          return;
+        }
+        if (ch === "\u0003") process.exit(130); // Ctrl+C
+        if (ch === "\u0008" || ch === "\u007f") value = value.slice(0, -1);
+        else value += ch;
+      }
+    };
+    stdin.on("data", onData);
+  });
+}
+
 async function main() {
   for (const f of [PROD_FILE, IMPORT_FILE]) {
     if (!existsSync(f)) throw new Error(`${f} não encontrado. Rode antes: npm run env:prod`);
@@ -57,12 +85,17 @@ async function main() {
   vercel(["env", "pull", PULLED, "--environment=production", "--yes"]);
   const pulled = parseEnv(readFileSync(PULLED, "utf8"));
   rmSync(PULLED, { force: true });
-  const dbUrl = pulled.get("DATABASE_URL_UNPOOLED") || pulled.get("POSTGRES_URL_NON_POOLING") || pulled.get("DATABASE_URL") || "";
+  let dbUrl = pulled.get("DATABASE_URL_UNPOOLED") || pulled.get("POSTGRES_URL_NON_POOLING") || pulled.get("DATABASE_URL") || "";
+  const already = parseEnv(readFileSync(PROD_FILE, "utf8")).get("DATABASE_URL") || "";
+  if (!dbUrl.startsWith("postgres") && already.startsWith("postgres")) dbUrl = already;
   if (!dbUrl.startsWith("postgres")) {
-    throw new Error(
-      "A Vercel não devolveu a URL do banco (variáveis marcadas como sensíveis não podem ser baixadas). " +
-        "Copie DATABASE_URL_UNPOOLED em Storage → neon-sky-park → .env.local e cole em " + PROD_FILE + ".",
+    console.log(
+      "\nA Vercel protege a URL do banco (valor secreto), então ela precisa vir de você:\n" +
+        "  Vercel → Storage → neon-sky-park → Quickstart (.env.local) → Show secret\n" +
+        "  copie o valor de DATABASE_URL_UNPOOLED (só a parte depois do =, sem aspas).\n",
     );
+    dbUrl = (await askHidden("Cole a URL aqui e tecle Enter (ela não aparece na tela): ")).trim().replace(/^["']|["']$/g, "");
+    if (!/^postgres(ql)?:\/\/\S+$/.test(dbUrl)) throw new Error("Isso não parece uma URL do Postgres (deve começar com postgresql://).");
   }
   const prodText = readFileSync(PROD_FILE, "utf8").replace(/^DATABASE_URL=.*$/m, `DATABASE_URL=${dbUrl}`);
   writeFileSync(PROD_FILE, prodText, { mode: 0o600 });

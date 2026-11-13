@@ -2,7 +2,7 @@
     "name":  "tryggport-dev",
     "version":  "1.0.0",
     "private":  true,
-    "description":  "Tryggport Dev Ã¢â‚¬â€ portfÃƒÂ³lio com terminal interativo e uma camada narrativa protegida no servidor.",
+    "description":  "Tryggport Dev ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â portfÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³lio com terminal interativo e uma camada narrativa protegida no servidor.",
     "type":  "module",
     "engines":  {
                     "node":  "\u003e=20.18"
@@ -26,7 +26,10 @@
                     "secrets:generate":  "node scripts/generate-secrets.mjs",
                     "verify":  "npm run typecheck \u0026\u0026 npm test \u0026\u0026 npm run build \u0026\u0026 npm run audit:bundle",
                     "db:seed:prod":  "tsx --env-file=.env.production.local --conditions=react-server scripts/seed.ts",
-                    "env:prod":  "node scripts/prepare-production-env.mjs"
+                    "env:prod":  "node scripts/prepare-production-env.mjs",
+                    "vercel-build":  "tsx --conditions=react-server scripts/deploy-seed.ts \u0026\u0026 next build",
+                    "narrative:pack":  "tsx --conditions=react-server scripts/pack-narrative.ts",
+                    "narrative:verify":  "tsx --conditions=react-server scripts/verify-pack.ts"
                 },
     "dependencies":  {
                          "@electric-sql/pglite":  "^0.5.16",
